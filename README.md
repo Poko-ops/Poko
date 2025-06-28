@@ -1,4 +1,3 @@
-# Poko
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,12 +85,13 @@
 </head>
 <body>
   <h1>✨ On your mind? Let 'em know!🎉</h1>
-<p style="font-style: italic; color: #6d4c41; margin-top: -10px; margin-bottom: 30px;">
-  (No chat. No buzz. Just a sweet little reminder.)
-</p>
+  <p style="font-style: italic; color: #6d4c41; margin-top: -10px; margin-bottom: 30px;">
+    (No chat. No buzz. Just a sweet little reminder.)
+  </p>
 
   <input type="text" id="senderInput" placeholder="Your name" />
   <input type="text" id="receiverInput" placeholder="Who to send it to?" />
+  <input type="email" id="receiverEmail" placeholder="Receiver's email address" />
   <select id="actionType">
     <option value="poked">Poke 👈</option>
     <option value="hugged">Hug 🤗</option>
@@ -100,10 +100,8 @@
   </select>
   <br />
   <textarea id="customMessage" placeholder="Add a silly message!"></textarea>
- <br />
-
-<input type="url" id="memeUrl" placeholder="Add a meme image URL (optional)" />
-
+  <br />
+  <input type="url" id="memeUrl" placeholder="Add a meme image URL (optional)" />
   <br />
   <button onclick="sendAction()">Send 🚀</button>
   <div id="response"></div>
@@ -112,18 +110,46 @@
   <ul id="historyList"></ul>
   <audio id="actionSound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    emailjs.init("YOt6ObadVmSe8JS7r"); // Replace with your EmailJS public key
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB66JgW3guUBFwj172E6ai8NnQITrTuP_c",
-      authDomain: "poka-3a590.firebaseapp.com",
-      projectId: "poka-3a590",
-      storageBucket: "poka-3a590.appspot.com",
-      messagingSenderId: "591851837557",
-      appId: "1:591851837557:web:9b0e7f346f4cacf397003c",
-      measurementId: "G-62Z5TP0HEJ"
-    };
+    async function sendAction() {
+      const sender = document.getElementById('senderInput').value.trim();
+      const receiver = document.getElementById('receiverInput').value.trim();
+      const receiverEmail = document.getElementById('receiverEmail').value.trim();
+      const action = document.getElementById('actionType').value;
+      const message = document.getElementById('customMessage').value.trim();
+      const memeUrl = document.getElementById('memeUrl').value.trim();
+      const response = document.getElementById('response');
+      const actionSound = document.getElementById('actionSound');
 
-    const app = initializeApp(firebase
+      if (!sender || !receiver || !receiverEmail) {
+        response.textContent = "Please enter all required fields including receiver email.";
+        return;
+      }
+
+      try {
+        actionSound.play();
+        response.textContent = `You ${action} ${receiver}!`;
+        response.classList.add("action-animation");
+        setTimeout(() => response.classList.remove("action-animation"), 500);
+
+        await emailjs.send("service_oxqueld", "template_ver8gt6", {
+          from_name: sender,
+          to_name: receiver,
+          to_email: receiverEmail,
+          action_type: action,
+          custom_message: message,
+          meme_url: memeUrl
+        });
+
+        response.textContent += " Email sent!";
+      } catch (error) {
+        console.error("Error:", error);
+        response.textContent = "Something went wrong!";
+      }
+    }
+  </script>
+</body>
+</html>
